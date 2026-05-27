@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import CharacterPicker from '../components/CharacterPicker';
 import LocationPicker from '../components/LocationPicker';
+import Logo from '../components/Logo';
 import { supabase } from '../lib/supabase';
 
 export default function Setup({ onProfileCreated }) {
@@ -37,7 +38,6 @@ export default function Setup({ onProfileCreated }) {
       let profileData = null;
 
       if (isSupabaseConfigured) {
-        // Create user profile in Supabase
         const { data, error } = await supabase
           .from('profiles')
           .insert({
@@ -59,7 +59,6 @@ export default function Setup({ onProfileCreated }) {
         profileData = data;
         profileId = data.id;
       } else {
-        // Fallback local simulation
         profileId = crypto.randomUUID();
         profileData = {
           id: profileId,
@@ -69,17 +68,14 @@ export default function Setup({ onProfileCreated }) {
           lng: coords.lng,
           points: 0
         };
-        // Save mock profiles locally to simulate other players
         const savedMockProfiles = JSON.parse(localStorage.getItem('mock_profiles') || '[]');
         savedMockProfiles.push(profileData);
         localStorage.setItem('mock_profiles', JSON.stringify(savedMockProfiles));
       }
 
-      // Save user session to localStorage
       localStorage.setItem('recyclerumble_user_id', profileId);
       localStorage.setItem('recyclerumble_user_profile', JSON.stringify(profileData));
 
-      // Callback to app router
       if (onProfileCreated) {
         onProfileCreated(profileData);
       }
@@ -92,54 +88,75 @@ export default function Setup({ onProfileCreated }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center p-4">
-      {/* Background radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06),transparent_60%)] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#0a130c' }}>
+      {/* Background radial glow — brand green */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, rgba(17,124,72,0.08), transparent 60%)' }}
+      />
 
       <div className="w-full max-w-2xl glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 my-8">
-        {/* Title */}
-        <div className="text-center mb-6">
-          <span className="text-5xl">♻️</span>
-          <h1 className="text-3xl font-extrabold tracking-tight font-display bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mt-3">
-            RecycleRumble
-          </h1>
-          <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-md mx-auto leading-relaxed">
-            Create your recycling avatar, drop a pin on the map, and compete globally to save the planet!
+        {/* ── Title ── */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <Logo size="lg" showTagline />
+          </div>
+          <p className="text-xs sm:text-sm mt-1 max-w-md mx-auto leading-relaxed" style={{ color: '#695032' }}>
+            Create your cleanup avatar, drop a pin on the map, and compete globally to keep your streets clean!
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Username Input */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold tracking-wide uppercase text-slate-400">
+            <label className="text-xs font-bold tracking-wide uppercase" style={{ color: '#d89d57' }}>
               Player Username
             </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. EcoWarrior42"
+              placeholder="e.g. LitterBuster42"
               maxLength={20}
-              className="bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all font-medium"
+              className="rounded-xl px-4 py-3 text-sm text-white font-medium outline-none transition-all"
+              style={{
+                backgroundColor: 'rgba(10,19,12,0.7)',
+                border: '1px solid rgba(17,124,72,0.35)'
+              }}
+              onFocus={e => {
+                e.currentTarget.style.borderColor = '#117c48';
+                e.currentTarget.style.boxShadow = '0 0 0 2px rgba(17,124,72,0.15)';
+              }}
+              onBlur={e => {
+                e.currentTarget.style.borderColor = 'rgba(17,124,72,0.35)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             />
           </div>
 
           {/* Character Selector */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold tracking-wide uppercase text-slate-400">
+            <label className="text-xs font-bold tracking-wide uppercase" style={{ color: '#d89d57' }}>
               Select Character Avatar
             </label>
             <CharacterPicker selectedId={characterId} onSelect={setCharacterId} />
           </div>
 
-          {/* Location Picker Map */}
+          {/* Location Picker */}
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-baseline">
-              <label className="text-xs font-bold tracking-wide uppercase text-slate-400">
+              <label className="text-xs font-bold tracking-wide uppercase" style={{ color: '#d89d57' }}>
                 Drop Your Map Pin
               </label>
               {coords.lat && (
-                <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                <span
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
+                  style={{
+                    color: '#bbffba',
+                    backgroundColor: 'rgba(17,124,72,0.15)',
+                    borderColor: 'rgba(17,124,72,0.4)'
+                  }}
+                >
                   📍 Pinned
                 </span>
               )}
@@ -148,22 +165,33 @@ export default function Setup({ onProfileCreated }) {
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 bg-red-950/30 border border-red-900/40 rounded-xl text-xs text-red-400 font-medium text-center animate-shake">
+            <div className="p-3.5 rounded-xl text-xs font-medium text-center" style={{
+              backgroundColor: 'rgba(127,29,29,0.25)',
+              border: '1px solid rgba(127,29,29,0.4)',
+              color: '#fca5a5'
+            }}>
               ⚠️ {errorMsg}
             </div>
           )}
 
-          {/* Submit button */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full py-3.5 rounded-xl font-bold tracking-wide text-sm transition-all duration-300 shadow-xl cursor-pointer ${
+            className="w-full py-3.5 rounded-xl font-bold tracking-wide text-sm transition-all duration-300 shadow-xl cursor-pointer"
+            style={
               isSubmitting
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 hover:brightness-110 active:scale-98 shadow-emerald-500/10'
-            }`}
+                ? { backgroundColor: '#1a3024', color: '#695032', cursor: 'not-allowed' }
+                : {
+                    background: 'linear-gradient(135deg, #117c48, #bbffba)',
+                    color: '#0a130c',
+                    boxShadow: '0 8px 32px rgba(17,124,72,0.25)'
+                  }
+            }
+            onMouseEnter={e => { if (!isSubmitting) e.currentTarget.style.filter = 'brightness(1.1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
           >
-            {isSubmitting ? 'Entering Arena...' : 'Join the Arena 🚀'}
+            {isSubmitting ? 'Setting up your profile…' : 'Join the Clean-Up 🌿'}
           </button>
         </form>
       </div>
