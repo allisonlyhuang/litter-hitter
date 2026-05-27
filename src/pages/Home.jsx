@@ -295,7 +295,7 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
                     }}
                   >
                     <img
-                      src={sub.image_url}
+                      src={sub.image_url || 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=200'}
                       alt={sub.item_name}
                       className="w-14 h-14 rounded-xl object-cover border"
                       style={{ borderColor: 'rgba(17,124,72,0.3)', backgroundColor: '#0a130c' }}

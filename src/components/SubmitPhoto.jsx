@@ -207,42 +207,23 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
         return;
       }
 
-      setMessage('Uploading photo to Supabase storage...');
+      setMessage('Recording points and logging submission...');
 
-      // 2. Upload photo to Supabase Storage
-      let imageUrl = previewUrl; // Fallback to object URL for local preview testing
+      // 2. Use a beautiful static placeholder for the database to bypass storage uploads
+      const staticPlaceholder = 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=200';
       const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_URL.includes('placeholder-url');
 
       if (isSupabaseConfigured) {
-        const fileExt = file.name.split('.').pop() || 'jpg';
-        const fileName = `${userProfile.id || 'anonymous'}-${Date.now()}.${fileExt}`;
-        const filePath = `submissions/${fileName}`;
-
-        // Attempt upload to 'recycling-photos' bucket
-        const { error: uploadError, data: uploadData } = await supabase.storage
-          .from('recycling-photos')
-          .upload(filePath, file);
-
-        if (!uploadError && uploadData) {
-          const { data: publicUrlData } = supabase.storage
-            .from('recycling-photos')
-            .getPublicUrl(filePath);
-          imageUrl = publicUrlData?.publicUrl;
-        } else {
-          console.warn("Storage upload failed or 'recycling-photos' bucket doesn't exist. Using local preview URL.", uploadError);
-        }
-
-        setMessage('Recording points and logging submission...');
-
-        // 3. Insert into submissions table
+        // 3. Insert into submissions table (without image_url column)
         const { error: insertError } = await supabase.from('submissions').insert({
           user_id: userProfile.id,
-          image_url: imageUrl,
           item_name: aiResult.item,
           verified: true
         });
 
         if (insertError) throw insertError;
+
+
 
         // 4. Update profile points (Increment by 10)
         const newPoints = (userProfile.points || 0) + 10;
