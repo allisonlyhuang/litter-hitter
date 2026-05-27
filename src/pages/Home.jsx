@@ -3,12 +3,30 @@ import SubmitPhoto from '../components/SubmitPhoto';
 import Logo from '../components/Logo';
 import { supabase } from '../lib/supabase';
 import { CHARACTERS } from '../characters';
+const getEcoTip = (itemName = '') => {
+  const name = itemName.toLowerCase();
+  if (name.includes('plastic') || name.includes('bottle')) {
+    return 'Plastic bottles take up to 450 years to decompose! Recycling one saves enough energy to power a light bulb for 3 hours.';
+  }
+  if (name.includes('paper') || name.includes('cardboard') || name.includes('box')) {
+    return 'Recycling 1 ton of cardboard saves 46 gallons of oil, 9 cubic yards of landfill space, and 17 trees!';
+  }
+  if (name.includes('can') || name.includes('aluminum') || name.includes('metal')) {
+    return 'Aluminum cans are 100% recyclable and can be recycled indefinitely! A recycled can is back on the shelf in as little as 60 days.';
+  }
+  if (name.includes('glass')) {
+    return 'Glass is 100% recyclable and never loses its quality or purity. Recycling glass reduces air pollution by 20% compared to new glass.';
+  }
+  return 'Properly disposing of litter protects local wildlife, prevents microplastics from entering waterways, and keeps our green spaces beautiful!';
+};
 
 export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [newCharId, setNewCharId] = useState(userProfile?.character || 'frog');
+  const [showAllSubmissions, setShowAllSubmissions] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
 
   const charInfo = CHARACTERS[userProfile?.character] || CHARACTERS.frog;
 
@@ -264,7 +282,22 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
               <h2 className="text-lg font-bold font-display text-white">
                 📦 Your Recent Submissions
               </h2>
-              <span className="text-xs font-semibold" style={{ color: '#695032' }}>{submissions.length} Total</span>
+              <div className="flex items-center gap-3">
+                {submissions.length > 8 && (
+                  <button
+                    onClick={() => setShowAllSubmissions(!showAllSubmissions)}
+                    className="text-[11px] font-bold px-2.5 py-1 rounded-xl border transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1 hover:brightness-110"
+                    style={{
+                      backgroundColor: 'rgba(216,157,87,0.1)',
+                      borderColor: 'rgba(216,157,87,0.3)',
+                      color: '#d89d57'
+                    }}
+                  >
+                    {showAllSubmissions ? 'Collapse' : `Show All (${submissions.length})`}
+                  </button>
+                )}
+                <span className="text-xs font-semibold" style={{ color: '#695032' }}>{submissions.length} Total</span>
+              </div>
             </div>
 
             {loading ? (
@@ -285,17 +318,26 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {submissions.map((sub) => (
+                {(showAllSubmissions ? submissions : submissions.slice(0, 8)).map((sub) => (
                   <div
                     key={sub.id}
-                    className="rounded-2xl p-3 flex items-center gap-3.5 transition duration-200 border"
+                    onClick={() => setSelectedSubmission(sub)}
+                    className="rounded-2xl p-3 flex items-center gap-3.5 transition duration-200 border cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                     style={{
                       backgroundColor: 'rgba(10,19,12,0.5)',
                       borderColor: 'rgba(17,124,72,0.2)'
                     }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = 'rgba(187,255,186,0.35)';
+                      e.currentTarget.style.backgroundColor = 'rgba(10,19,12,0.7)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = 'rgba(17,124,72,0.2)';
+                      e.currentTarget.style.backgroundColor = 'rgba(10,19,12,0.5)';
+                    }}
                   >
                     <img
-                      src={sub.image_url}
+                      src={sub.image_url || 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=200'}
                       alt={sub.item_name}
                       className="w-14 h-14 rounded-xl object-cover border"
                       style={{ borderColor: 'rgba(17,124,72,0.3)', backgroundColor: '#0a130c' }}
@@ -321,6 +363,119 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
           </div>
         </div>
       </main>
+
+      {/* ── Submission Detail Popup Modal ── */}
+      {selectedSubmission && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+          onClick={() => setSelectedSubmission(null)}
+        >
+          <div 
+            className="w-full max-w-sm glass-panel rounded-3xl overflow-hidden shadow-2xl border p-6 relative animate-scale-up"
+            style={{ 
+              borderColor: 'rgba(17,124,72,0.4)', 
+              backgroundColor: 'rgba(10,19,12,0.95)',
+              backgroundImage: 'linear-gradient(to bottom, rgba(17,124,72,0.05), rgba(10,19,12,0))'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedSubmission(null)}
+              className="absolute top-4 right-4 bg-slate-900/80 hover:bg-red-500/20 hover:text-red-400 text-slate-400 border border-slate-800 rounded-full p-2 transition cursor-pointer shadow-md flex items-center justify-center w-8 h-8 font-bold"
+              title="Close Details"
+            >
+              ✕
+            </button>
+
+            {/* Modal Title */}
+            <h3 className="text-lg font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+              📦 Submission Details
+            </h3>
+
+            {/* Submission Image */}
+            <div className="w-full h-48 rounded-2xl overflow-hidden border border-slate-800 relative bg-slate-950 mb-5">
+              <img 
+                src={selectedSubmission.image_url || 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=200'} 
+                alt={selectedSubmission.item_name} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=200';
+                }}
+              />
+              <div className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-500/20">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                <span className="w-2 h-2 bg-emerald-500 rounded-full absolute" />
+                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono ml-3">
+                  {selectedSubmission.verified ? 'Verified Log' : 'Unverified Log'}
+                </span>
+              </div>
+            </div>
+
+            {/* Info Fields */}
+            <div className="space-y-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#695032' }}>Item Category / Name</span>
+                <h4 className="text-xl font-extrabold text-white capitalize mt-0.5 tracking-tight">
+                  {selectedSubmission.item_name || 'Litter Item'}
+                </h4>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 border-t border-b py-4" style={{ borderColor: 'rgba(17,124,72,0.2)' }}>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#695032' }}>Points Awarded</span>
+                  <span className="block text-lg font-extrabold mt-0.5" style={{ color: '#bbffba' }}>
+                    +10 pts
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#695032' }}>Status</span>
+                  <span className="block text-sm font-bold mt-1 text-emerald-400 flex items-center gap-1">
+                    🟢 Completed
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#695032' }}>Logged At</span>
+                <p className="text-xs text-slate-300 mt-0.5 font-medium">
+                  {new Date(selectedSubmission.created_at).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+                <p className="text-xs text-slate-450 font-mono mt-0.5">
+                  {new Date(selectedSubmission.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </p>
+              </div>
+
+              {selectedSubmission.id && (
+                <div className="bg-slate-950/40 p-2.5 rounded-xl border border-slate-900 text-center">
+                  <span className="text-[9px] font-bold uppercase tracking-wider font-mono" style={{ color: '#695032' }}>Submission Reference ID</span>
+                  <code className="block text-[9px] text-slate-500 font-mono mt-0.5 select-all truncate">
+                    {selectedSubmission.id}
+                  </code>
+                </div>
+              )}
+
+              {/* Dynamic Environmental Tip based on item type */}
+              <div className="p-3.5 rounded-2xl border" style={{ backgroundColor: 'rgba(216,157,87,0.06)', borderColor: 'rgba(216,157,87,0.2)' }}>
+                <h5 className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: '#d89d57' }}>💡 Eco Tip</h5>
+                <p className="text-[11px] leading-relaxed text-slate-300 font-medium">
+                  {getEcoTip(selectedSubmission.item_name)}
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="mt-6">
+              <button
+                onClick={() => setSelectedSubmission(null)}
+                className="w-full bg-slate-900 border border-slate-800 hover:bg-slate-850 text-slate-300 font-bold py-2.5 px-4 rounded-xl transition duration-200 cursor-pointer text-sm text-center"
+              >
+                Close Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
