@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { verifyRecyclable } from '../lib/gemini';
+import { verifyTrash } from '../lib/gemini';
 import HitterAnimation from './HitterAnimation';
 
 export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
@@ -203,7 +203,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
 
       if (!aiResult.isTrash) {
         setStatus('error');
-        setMessage(`Hmm, Gemini couldn't confirm this as trash or litter (detected: "${aiResult.item || 'unknown'}"). Please take a clear photo of a piece of litter or garbage.`);
+        setMessage(`Hmm, Gemini analyzed this as "${aiResult.item || 'something unrecognizable'}". Make sure there's visible trash in the photo — wrappers, bottles, cans, bags, anything!`);
         return;
       }
 

@@ -41,14 +41,16 @@ export async function verifyTrash(base64Image, mimeType = "image/jpeg") {
                 {
                   text: `Look at this image and determine whether it shows any piece of trash, litter, or waste.
 
-Be GENEROUS — count anything that someone would throw away or that doesn't belong on the ground:
-- Recyclables: plastic bottles, cans, cardboard, glass, paper, cartons
-- Food waste: wrappers, cups, napkins, straws, utensils, takeout containers, pizza boxes
-- General litter: cigarette butts, plastic bags, chip bags, candy wrappers, styrofoam
-- Household waste: old clothes, broken items, packaging, junk mail
-- Any visible garbage or rubbish, even if partially visible
+Be VERY GENEROUS — if there is any doubt, return true. Count anything disposable or discarded:
+- Wrappers of ANY kind: candy wrappers, chip bags, snack wrappers, granola bar wrappers, gum wrappers, foil wrappers — ALL count
+- ANYTHING plastic: bottles, bags, straws, utensils, containers, lids, caps, cups, film, packaging, toys, parts — if it looks plastic, it counts
+- Paper & cardboard: boxes, cups, napkins, receipts, junk mail, pizza boxes, takeout containers
+- Metal: cans, foil, bottle caps
+- Glass: bottles, jars
+- General litter: cigarette butts, styrofoam, rubber bands, twist ties, broken items, old clothes
+- Even partially visible trash counts
 
-Only return false (not trash) if the image clearly shows NO waste at all — e.g. just a person, a landscape, a pet, a car with nothing discarded.
+Only return false if the image clearly shows NO trash or waste at all — e.g. purely a person, a clean empty landscape, a pet with no litter, fresh uneaten food.
 
 Reply with ONLY a valid JSON object, no markdown, no extra text.
 Format: { "isTrash": true/false, "item": "short descriptive name of the item" }`
