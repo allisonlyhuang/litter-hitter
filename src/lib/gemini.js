@@ -9,17 +9,16 @@ export async function verifyRecyclable(base64Image, mimeType = "image/jpeg") {
     ? base64Image.split(",")[1]
     : base64Image;
 
-  // Try models newest → oldest; try both API versions per model
+  // Resilient fallback order prioritizing latest high-quota models (gemini-3.5-flash) and scaling down
   const attempts = [
+    { model: "gemini-3.5-flash",            api: "v1" },
+    { model: "gemini-3.1-flash-lite",       api: "v1" },
+    { model: "gemini-2.5-flash",            api: "v1" },
+    { model: "gemini-2.0-flash",            api: "v1" },
     { model: "gemini-2.5-flash",            api: "v1beta" },
-    { model: "gemini-2.5-flash-lite-preview-06-17", api: "v1beta" },
     { model: "gemini-2.0-flash",            api: "v1beta" },
-    { model: "gemini-2.0-flash-lite",       api: "v1beta" },
-    { model: "gemini-1.5-flash-latest",     api: "v1beta" },
-    { model: "gemini-1.5-flash",            api: "v1"     },
-    { model: "gemini-1.5-flash",            api: "v1beta" },
-    { model: "gemini-1.5-pro-latest",       api: "v1beta" },
   ];
+
 
   let lastError = null;
 
