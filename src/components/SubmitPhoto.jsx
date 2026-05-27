@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { verifyRecyclable } from '../lib/gemini';
+import HitterAnimation from './HitterAnimation';
 
 export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
   const [file, setFile] = useState(null);
@@ -474,21 +475,23 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
 
       {/* State 3: Success Screen */}
       {status === 'success' && resultData && (
-        <div className="text-center py-4 space-y-4 animate-fadeIn">
-          <div className="flex justify-center text-5xl animate-bounce">
-            🎉
-          </div>
-          <div>
+        <div className="space-y-4 animate-fadeIn">
+          {/* hitter.mp4 green-screened over the submitted trash photo */}
+          <HitterAnimation backgroundUrl={previewUrl} />
+
+          <div className="text-center">
             <h3 className="text-lg font-bold text-white tracking-tight">Recycled Successfully!</h3>
             <p className="text-xs text-emerald-400 font-semibold mt-1">
               Verified Item: <span className="underline">{resultData.item}</span>
             </p>
           </div>
-          <div className="inline-flex flex-col items-center bg-slate-900/60 border border-slate-800/80 rounded-2xl py-3 px-6 shadow-md">
-            <span className="text-[11px] text-slate-400 tracking-wide uppercase font-semibold">Points Earned</span>
-            <span className="text-3xl font-extrabold text-emerald-400 mt-1 font-display">+{resultData.pointsEarned}</span>
+          <div className="flex justify-center">
+            <div className="inline-flex flex-col items-center bg-slate-900/60 border border-slate-800/80 rounded-2xl py-3 px-6 shadow-md">
+              <span className="text-[11px] text-slate-400 tracking-wide uppercase font-semibold">Points Earned</span>
+              <span className="text-3xl font-extrabold text-emerald-400 mt-1 font-display">+{resultData.pointsEarned}</span>
+            </div>
           </div>
-          <button 
+          <button
             onClick={resetForm}
             className="w-full bg-slate-850 hover:bg-slate-800 text-slate-350 border border-slate-800 font-semibold py-2 px-4 rounded-xl transition duration-200 cursor-pointer"
           >
