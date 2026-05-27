@@ -1,4 +1,4 @@
-export async function verifyRecyclable(base64Image, mimeType = "image/jpeg") {
+export async function verifyTrash(base64Image, mimeType = "image/jpeg") {
   const apiKey = import.meta.env.VITE_GEMINI_KEY;
   if (!apiKey) {
     throw new Error("VITE_GEMINI_KEY is missing in your .env file!");
@@ -51,7 +51,7 @@ Be GENEROUS — count anything that someone would throw away or that doesn't bel
 Only return false (not trash) if the image clearly shows NO waste at all — e.g. just a person, a landscape, a pet, a car with nothing discarded.
 
 Reply with ONLY a valid JSON object, no markdown, no extra text.
-Format: { "recyclable": true/false, "item": "short descriptive name of the item" }`
+Format: { "isTrash": true/false, "item": "short descriptive name of the item" }`
                 }
               ]
             }]

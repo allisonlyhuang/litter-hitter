@@ -9,7 +9,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
   const [message, setMessage] = useState('');
   const [resultData, setResultData] = useState(null); // { item, pointsEarned }
-  
+
   // Camera state
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
@@ -43,7 +43,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
 
     try {
       setCameraError(null);
-      
+
       // Stop any existing stream tracks
       if (cameraStream) {
         cameraStream.getTracks().forEach(track => track.stop());
@@ -52,8 +52,8 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
       // Configure video constraints.
       // Use deviceId if provided, else prefer the back camera ('environment') on mobile devices.
       const constraints = {
-        video: deviceId 
-          ? { deviceId: { exact: deviceId } } 
+        video: deviceId
+          ? { deviceId: { exact: deviceId } }
           : { facingMode: { ideal: 'environment' } }
       };
 
@@ -118,7 +118,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
 
     const video = videoRef.current;
     const canvas = document.createElement('canvas');
-    
+
     // Capture at the actual stream resolution
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
@@ -176,7 +176,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
     if (!file) return;
 
     setStatus('loading');
-    setMessage('AI is analyzing your item...');
+    setMessage('AI is analyzing your photo for trash...');
 
     try {
       // 1. Convert to base64 for Gemini vision analysis
@@ -187,23 +187,23 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
       let aiResult;
 
       if (hasGeminiKey) {
-        aiResult = await verifyRecyclable(base64String, file.type);
+        aiResult = await verifyTrash(base64String, file.type);
       } else {
         // High fidelity mock delay + simulation
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        
-        // Match mock recycling outcomes from name or randomize
-        const isRecyclableMock = Math.random() > 0.25;
-        const mockItems = ['Plastic Water Bottle', 'Cardboard Pizza Box', 'Glass Soda Bottle', 'Aluminum Soda Can', 'Crushed Paper Box'];
+
+        // Mock trash detection outcomes
+        const isTrashMock = Math.random() > 0.15;
+        const mockItems = ['Plastic Bottle', 'Fast Food Wrapper', 'Cigarette Butt', 'Coffee Cup', 'Plastic Bag', 'Soda Can', 'Cardboard Box'];
         aiResult = {
-          recyclable: isRecyclableMock,
-          item: isRecyclableMock ? mockItems[Math.floor(Math.random() * mockItems.length)] : 'Unknown Non-Recyclable Object'
+          isTrash: isTrashMock,
+          item: isTrashMock ? mockItems[Math.floor(Math.random() * mockItems.length)] : 'Unidentified Object'
         };
       }
 
-      if (!aiResult.recyclable) {
+      if (!aiResult.isTrash) {
         setStatus('error');
-        setMessage(`Hmm, Gemini analyzed this as a "${aiResult.item || 'non-recyclable object'}". That doesn't seem recyclable! Try uploading a bottle, can, paper, or box.`);
+        setMessage(`Hmm, Gemini couldn't confirm this as trash or litter (detected: "${aiResult.item || 'unknown'}"). Please take a clear photo of a piece of litter or garbage.`);
         return;
       }
 
@@ -245,7 +245,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
       });
       setStatus('success');
       setMessage('Brilliant! Points added successfully.');
-      
+
       // Notify parent to refresh profile and global stats
       if (onSubmissionSuccess) {
         onSubmissionSuccess(aiResult.item, 10);
@@ -271,9 +271,9 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
   return (
     <div className="w-full glass-panel rounded-3xl border border-slate-800/80 overflow-hidden shadow-2xl p-6 relative">
       <h2 className="text-xl font-extrabold font-display tracking-tight text-white mb-4 flex items-center justify-between">
-        <span>♻️ Recycle a New Item</span>
+        <span>🗑️ Log Trash Pickup</span>
         {isCameraActive && devices.length > 1 && (
-          <select 
+          <select
             value={selectedDeviceId}
             onChange={handleDeviceChange}
             className="bg-slate-900/90 border border-slate-800 text-slate-350 text-[11px] font-bold rounded-xl py-1 px-2.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer max-w-[130px] truncate"
@@ -288,27 +288,27 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
       </h2>
 
       {/* Hidden file input for file upload path */}
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={handleFileChange} 
-        accept="image/*" 
-        className="hidden" 
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
       />
 
       {status === 'idle' && !previewUrl && (
         <div className="space-y-4">
-          
+
           {/* CAMERA ACTIVE: Live viewfinder */}
           {isCameraActive ? (
             <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden border border-slate-800 relative bg-slate-950 flex items-center justify-center">
-              <video 
-                ref={videoRef} 
-                autoPlay 
-                playsInline 
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
                 className="w-full h-full object-cover"
               />
-              
+
               {/* Camera Overlays */}
               <div className="absolute inset-0 border border-emerald-500/10 rounded-2xl pointer-events-none flex items-center justify-center">
                 {/* Visual Grid for Alignment */}
@@ -316,7 +316,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
                 <div className="w-full h-[1px] bg-slate-500/10 absolute top-2/3" />
                 <div className="h-full w-[1px] bg-slate-500/10 absolute left-1/3" />
                 <div className="h-full w-[1px] bg-slate-500/10 absolute left-2/3" />
-                
+
                 {/* Corner Crosshairs */}
                 <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-emerald-400/30 rounded-tl-sm" />
                 <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-emerald-400/30 rounded-tr-sm" />
@@ -333,7 +333,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
             </div>
           ) : (
             /* CAMERA INACTIVE / FALLBACK: File Uploader drop area */
-            <div 
+            <div
               className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-700/60 bg-slate-950/20 hover:bg-slate-900/30 rounded-2xl text-center relative transition duration-300"
             >
               {/* Big primary camera activation button */}
@@ -343,9 +343,9 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
               >
                 📷 Enable Device Camera
               </button>
-              
+
               {/* Secondary file uploading area */}
-              <div 
+              <div
                 onClick={() => fileInputRef.current.click()}
                 className="cursor-pointer w-full flex flex-col items-center group py-2 border-t border-slate-850/50 mt-2"
               >
@@ -361,7 +361,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
           {isCameraActive && (
             <div className="flex flex-col items-center gap-3">
               {/* Snap Button */}
-              <button 
+              <button
                 onClick={handleSnapPhoto}
                 className="w-16 h-16 rounded-full border-4 border-slate-800 bg-white hover:bg-slate-100 hover:scale-105 active:scale-95 transition duration-150 cursor-pointer shadow-xl flex items-center justify-center text-xl text-slate-900"
                 title="Capture Photo"
@@ -370,7 +370,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
               </button>
 
               {/* Secondary direct upload option */}
-              <button 
+              <button
                 onClick={handleUploadOptionClick}
                 className="text-xs text-slate-400 hover:text-emerald-400 font-semibold underline underline-offset-4 decoration-slate-700 hover:decoration-emerald-500 transition cursor-pointer"
               >
@@ -409,9 +409,9 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
         <div className="space-y-4">
           <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden border border-slate-800 relative bg-slate-950">
             <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
-            
+
             {status !== 'loading' && (
-              <button 
+              <button
                 onClick={resetForm}
                 className="absolute top-3 right-3 bg-slate-950/70 hover:bg-red-500 text-white rounded-full p-2 transition cursor-pointer shadow-md"
                 title="Discard"
@@ -431,13 +431,13 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
             </div>
           ) : (
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={resetForm}
                 className="flex-1 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-350 font-semibold py-2.5 px-4 rounded-xl transition duration-200 cursor-pointer text-sm"
               >
                 🔄 Retake / Change
               </button>
-              <button 
+              <button
                 onClick={handleUploadAndVerify}
                 className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition duration-200 cursor-pointer shadow-lg shadow-emerald-500/20 text-sm"
               >
@@ -463,7 +463,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
           <div className="text-center">
             <h3 className="text-lg font-bold text-white tracking-tight">Recycled Successfully!</h3>
             <p className="text-xs text-emerald-400 font-semibold mt-1">
-              Verified Item: <span className="underline">{resultData.item}</span>
+              Item picked up: <span className="underline">{resultData.item}</span>
             </p>
           </div>
           <div className="flex justify-center">
@@ -476,7 +476,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
             onClick={resetForm}
             className="w-full bg-slate-850 hover:bg-slate-800 text-slate-350 border border-slate-800 font-semibold py-2 px-4 rounded-xl transition duration-200 cursor-pointer"
           >
-            Log Another Item
+            Log Another Pickup
           </button>
         </div>
       )}
