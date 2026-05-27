@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SubmitPhoto from '../components/SubmitPhoto';
 import Logo from '../components/Logo';
+import Tutorial from '../components/Tutorial';
 import { supabase } from '../lib/supabase';
 import { CHARACTERS } from '../characters';
 const getEcoTip = (itemName = '') => {
@@ -27,14 +28,23 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
   const [newCharId, setNewCharId] = useState(userProfile?.character || 'frog');
   const [showAllSubmissions, setShowAllSubmissions] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [showTutorial, setShowTutorial] = useState(
+    () => !localStorage.getItem('recyclerumble_tutorial_seen')
+  );
+
+  const handleTutorialClose = () => {
+    localStorage.setItem('recyclerumble_tutorial_seen', '1');
+    setShowTutorial(false);
+  };
 
   const charInfo = CHARACTERS[userProfile?.character] || CHARACTERS.frog;
 
   useEffect(() => {
     fetchSubmissions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userProfile]);
 
-  const fetchSubmissions = async () => {
+  async function fetchSubmissions() {
     const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_URL.includes('placeholder-url');
 
     if (isSupabaseConfigured && userProfile?.id) {
@@ -149,6 +159,20 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
               onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(17,124,72,0.12)'}
             >
               🗺️ Global Map
+            </button>
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="p-2 rounded-xl transition cursor-pointer border font-bold text-sm"
+              style={{
+                backgroundColor: 'rgba(17,124,72,0.08)',
+                borderColor: 'rgba(17,124,72,0.3)',
+                color: '#bbffba'
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(17,124,72,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(17,124,72,0.08)'}
+              title="How to play"
+            >
+              ?
             </button>
             <button
               onClick={() => setShowSettings(!showSettings)}
@@ -370,6 +394,9 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
           </div>
         </div>
       </main>
+
+      {/* ── Tutorial Overlay ── */}
+      {showTutorial && <Tutorial onClose={handleTutorialClose} />}
 
       {/* ── Submission Detail Popup Modal ── */}
       {selectedSubmission && (
