@@ -41,14 +41,16 @@ export async function verifyRecyclable(base64Image, mimeType = "image/jpeg") {
                 {
                   text: `Look at this image and determine whether it shows any piece of trash, litter, or waste.
 
-Be GENEROUS — count anything that someone would throw away or that doesn't belong on the ground:
-- ANYTHING plastic, regardless of type or condition: bottles, bags, straws, utensils, containers, wrappers, lids, caps, cups, film, packaging, toys, parts — if it looks plastic, it counts
-- Recyclables: cans, cardboard, glass, paper, cartons, foil
-- Food waste: napkins, takeout containers, pizza boxes, coffee cups, fast food packaging
-- General litter: cigarette butts, chip bags, candy wrappers, styrofoam, gum wrappers
-- Household waste: old clothes, broken items, junk mail, any discarded object
+Be VERY GENEROUS — if there is any doubt, return true. Count anything disposable or discarded:
+- Wrappers of ANY kind: candy wrappers, chip bags, snack wrappers, granola bar wrappers, gum wrappers, foil wrappers — ALL count
+- ANYTHING plastic: bottles, bags, straws, utensils, containers, lids, caps, cups, film, packaging, toys, parts — if it looks plastic, it counts
+- Paper & cardboard: boxes, cups, napkins, receipts, junk mail, pizza boxes, takeout containers
+- Metal: cans, foil, bottle caps
+- Glass: bottles, jars
+- General litter: cigarette butts, styrofoam, rubber bands, twist ties, broken items, old clothes
+- Even partially visible trash counts
 
-Only return false if the image clearly shows NO trash or waste at all — e.g. just a person, a clean landscape, a pet, food that hasn't been discarded.
+Only return false if the image clearly shows NO trash or waste at all — e.g. purely a person, a clean empty landscape, a pet with no litter, fresh uneaten food.
 
 Reply with ONLY a valid JSON object, no markdown, no extra text.
 Format: { "recyclable": true/false, "item": "short descriptive name of the item" }`

@@ -203,7 +203,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
 
       if (!aiResult.recyclable) {
         setStatus('error');
-        setMessage(`Hmm, Gemini analyzed this as a "${aiResult.item || 'non-recyclable object'}". That doesn't seem recyclable! Try uploading a bottle, can, paper, or box.`);
+        setMessage(`Hmm, Gemini analyzed this as "${aiResult.item || 'something unrecognizable'}". Make sure there's visible trash in the photo — wrappers, bottles, cans, bags, anything!`);
         return;
       }
 
