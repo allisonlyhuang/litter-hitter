@@ -4,8 +4,8 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// Arena center: Winvale, Irvine, CA 92612
-const ARENA_CENTER = { lat: 33.6856, lng: -117.8230 };
+// Arena center: Aldrich Park, UC Irvine
+const ARENA_CENTER = { lat: 33.6461, lng: -117.8427 };
 const ARENA_RADIUS_MILES = 5;
 const ARENA_BOUNDS = [
   [ARENA_CENTER.lng - 0.09, ARENA_CENTER.lat - 0.09],

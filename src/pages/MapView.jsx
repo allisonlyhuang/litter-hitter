@@ -9,8 +9,8 @@ import LocationPicker from '../components/LocationPicker';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// Arena centered on Winvale, Irvine, CA 92612
-const ARENA_CENTER = { lat: 33.6856, lng: -117.8230 };
+// Arena centered on Aldrich Park, UC Irvine
+const ARENA_CENTER = { lat: 33.6461, lng: -117.8427 };
 const ARENA_RADIUS_MILES = 5;
 
 // Bounding box for the 5-mile radius (~0.09 deg padding)
@@ -32,13 +32,13 @@ function distanceMiles(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Mock competitors placed around the Irvine/Winvale area
+// Mock competitors placed around the UCI / Aldrich Park area
 const MOCK_COMPETITORS = [
-  { id: 'mock-1', username: 'IrvineGreen', character: 'frog', points: 180, lat: 33.6920, lng: -117.8310 },
-  { id: 'mock-2', username: 'RoboBins', character: 'robot', points: 90, lat: 33.6780, lng: -117.8140 },
-  { id: 'mock-3', username: 'BambooBear', character: 'panda', points: 120, lat: 33.6810, lng: -117.8380 },
-  { id: 'mock-4', username: 'XenoRecycler', character: 'alien', points: 40, lat: 33.6900, lng: -117.8100 },
-  { id: 'mock-5', username: 'FungiFriend', character: 'mushroom', points: 70, lat: 33.6730, lng: -117.8270 }
+  { id: 'mock-1', username: 'AntEaterAce', character: 'frog', points: 180, lat: 33.6490, lng: -117.8460 },
+  { id: 'mock-2', username: 'RoboBins', character: 'robot', points: 90, lat: 33.6430, lng: -117.8380 },
+  { id: 'mock-3', username: 'BambooBear', character: 'panda', points: 120, lat: 33.6510, lng: -117.8500 },
+  { id: 'mock-4', username: 'XenoRecycler', character: 'alien', points: 40, lat: 33.6400, lng: -117.8450 },
+  { id: 'mock-5', username: 'FungiFriend', character: 'mushroom', points: 70, lat: 33.6470, lng: -117.8350 }
 ];
 
 export default function MapView({ userProfile, onProfileUpdate, onNavigate }) {
