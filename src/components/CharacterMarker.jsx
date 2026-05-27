@@ -4,9 +4,10 @@ import { CHARACTERS } from '../characters';
 
 export default function CharacterMarker({ player, isCurrentUser, onClick }) {
   const character = CHARACTERS[player.character] || CHARACTERS.frog;
+  
+  // Calculate emoji font size: minimum 24px, growing steeply by 2px per point (+20px per item), maxing out at 120px
+  const size = Math.min(24 + (player.points || 0) * 2, 120);
 
-  // Size grows with points: min 32px, max 80px
-  const size = Math.min(32 + (player.points || 0) / 2, 80);
 
   return (
     <Marker latitude={player.lat} longitude={player.lng} anchor="center">
