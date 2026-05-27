@@ -2,7 +2,6 @@ import React from 'react';
 import { CHARACTERS } from '../characters';
 
 export default function Leaderboard({ profiles = [], currentUserId, onPlayerClick }) {
-  // Sort profiles by points descending
   const sortedProfiles = [...profiles].sort((a, b) => (b.points || 0) - (a.points || 0));
 
   const getRankBadge = (index) => {
@@ -16,22 +15,28 @@ export default function Leaderboard({ profiles = [], currentUserId, onPlayerClic
 
   const getRankStyle = (index) => {
     switch (index) {
-      case 0: return 'text-amber-400 font-bold';
-      case 1: return 'text-slate-300 font-semibold';
-      case 2: return 'text-amber-600 font-semibold';
-      default: return 'text-slate-500 text-xs';
+      case 0: return { color: '#d89d57', fontWeight: '700' };
+      case 1: return { color: '#bbffba', fontWeight: '600' };
+      case 2: return { color: '#695032', fontWeight: '600' };
+      default: return { color: '#4b5563', fontSize: '0.75rem' };
     }
   };
 
   return (
-    <div className="flex flex-col h-full glass-panel rounded-2xl border border-slate-800/80 overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-full glass-panel rounded-2xl overflow-hidden shadow-2xl" style={{ borderColor: 'rgba(17,124,72,0.25)' }}>
       {/* Header */}
-      <div className="p-5 border-b border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
+      <div
+        className="p-5 border-b flex items-center justify-between"
+        style={{ borderColor: 'rgba(17,124,72,0.2)', backgroundColor: 'rgba(10,19,12,0.5)' }}
+      >
         <div className="flex items-center gap-2">
           <span className="text-xl">📊</span>
           <h2 className="text-base font-bold tracking-wide font-display text-white">Leaderboard</h2>
         </div>
-        <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-medium">
+        <span
+          className="text-xs px-2 py-0.5 rounded-full border font-medium"
+          style={{ backgroundColor: 'rgba(17,124,72,0.12)', color: '#bbffba', borderColor: 'rgba(17,124,72,0.35)' }}
+        >
           Global
         </span>
       </div>
@@ -39,7 +44,7 @@ export default function Leaderboard({ profiles = [], currentUserId, onPlayerClic
       {/* List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[400px]">
         {sortedProfiles.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-center text-slate-500 text-sm">
+          <div className="flex flex-col items-center justify-center py-10 text-center text-sm" style={{ color: '#695032' }}>
             <span>📭</span>
             <p className="mt-2">No players yet. Be the first!</p>
           </div>
@@ -47,42 +52,46 @@ export default function Leaderboard({ profiles = [], currentUserId, onPlayerClic
           sortedProfiles.map((player, index) => {
             const isSelf = player.id === currentUserId;
             const char = CHARACTERS[player.character] || CHARACTERS.frog;
-            
+
             return (
               <div
                 key={player.id}
                 onClick={() => onPlayerClick?.(player)}
-                className={`flex items-center justify-between p-3 rounded-xl transition duration-200 cursor-pointer ${
-                  isSelf
-                    ? 'bg-emerald-500/10 border border-emerald-500/30 shadow-[inset_0_0_12px_rgba(16,185,129,0.05)]'
-                    : 'bg-slate-900/40 border border-slate-800/40 hover:border-slate-700/60 hover:bg-slate-850/40'
-                }`}
+                className="flex items-center justify-between p-3 rounded-xl transition duration-200 cursor-pointer border"
+                style={{
+                  backgroundColor: isSelf ? 'rgba(17,124,72,0.12)' : 'rgba(10,19,12,0.4)',
+                  borderColor: isSelf ? 'rgba(17,124,72,0.4)' : 'rgba(17,124,72,0.1)',
+                }}
+                onMouseEnter={e => { if (!isSelf) e.currentTarget.style.borderColor = 'rgba(17,124,72,0.25)'; }}
+                onMouseLeave={e => { if (!isSelf) e.currentTarget.style.borderColor = 'rgba(17,124,72,0.1)'; }}
               >
                 <div className="flex items-center gap-3">
                   {/* Rank */}
-                  <div className={`w-8 text-center flex items-center justify-center ${getRankStyle(index)}`}>
+                  <div className="w-8 text-center flex items-center justify-center" style={getRankStyle(index)}>
                     {getRankBadge(index)}
                   </div>
-                  
-                  {/* Character Emoji */}
-                  <span className="text-2xl filter drop-shadow-sm">{char.emoji}</span>
-                  
+
+                  {/* Avatar image */}
+                  <img src={char.img} alt={char.name} className="w-8 h-8 object-contain" />
+
                   {/* Username */}
                   <div className="flex flex-col">
-                    <span className={`text-sm font-medium ${isSelf ? 'text-emerald-400 font-semibold' : 'text-slate-200'}`}>
+                    <span className="text-sm font-medium" style={{ color: isSelf ? '#bbffba' : '#e2e8f0', fontWeight: isSelf ? '600' : '400' }}>
                       {player.username}
-                      {isSelf && <span className="text-[10px] ml-1.5 text-emerald-400 bg-emerald-400/10 px-1 py-0.2 rounded font-normal">You</span>}
+                      {isSelf && (
+                        <span className="text-[10px] ml-1.5 px-1 rounded font-normal" style={{ color: '#bbffba', backgroundColor: 'rgba(17,124,72,0.2)' }}>
+                          You
+                        </span>
+                      )}
                     </span>
-                    <span className="text-[10px] text-slate-500 tracking-wider">
-                      {char.name}
-                    </span>
+                    <span className="text-[10px] tracking-wider" style={{ color: '#695032' }}>{char.name}</span>
                   </div>
                 </div>
 
                 {/* Points */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-bold text-white tracking-tight">{player.points || 0}</span>
-                  <span className="text-[10px] text-slate-500 font-medium">pts</span>
+                  <span className="text-[10px] font-medium" style={{ color: '#695032' }}>pts</span>
                 </div>
               </div>
             );
