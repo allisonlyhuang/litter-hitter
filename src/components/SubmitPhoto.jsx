@@ -33,6 +33,15 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
     };
   }, [status, previewUrl, file]);
 
+  // Wire the stream to the <video> element after it renders in the DOM.
+  // This runs whenever isCameraActive flips to true (video element just appeared)
+  // or cameraStream changes (e.g. device switch).
+  useEffect(() => {
+    if (isCameraActive && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [isCameraActive, cameraStream]);
+
   const startCamera = async (deviceId = null) => {
     // 1. Verify browser support
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -60,11 +69,7 @@ export default function SubmitPhoto({ userProfile, onSubmissionSuccess }) {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       setCameraStream(stream);
       setIsCameraActive(true);
-
-      // Bind the video stream to the video element
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      // srcObject is set in a useEffect below, after the <video> element renders
 
       // Enumerate available video inputs for multi-camera support
       const allDevices = await navigator.mediaDevices.enumerateDevices();
