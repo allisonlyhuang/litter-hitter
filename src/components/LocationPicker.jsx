@@ -2,24 +2,50 @@ import React, { useState } from 'react';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
+// Arena center: Winvale, Irvine, CA 92612
+const ARENA_CENTER = { lat: 33.6856, lng: -117.8230 };
+const ARENA_RADIUS_MILES = 5;
+const ARENA_BOUNDS = [
+  [ARENA_CENTER.lng - 0.09, ARENA_CENTER.lat - 0.09],
+  [ARENA_CENTER.lng + 0.09, ARENA_CENTER.lat + 0.09]
+];
+
+function distanceMiles(lat1, lng1, lat2, lng2) {
+  const R = 3958.8;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 export default function LocationPicker({ initialLat, initialLng, onLocationSet }) {
   const [marker, setMarker] = useState(
     initialLat && initialLng ? { latitude: initialLat, longitude: initialLng } : null
   );
+  const [outOfBounds, setOutOfBounds] = useState(false);
 
   const handleMapClick = (event) => {
     const { lng, lat } = event.lngLat;
+    const dist = distanceMiles(lat, lng, ARENA_CENTER.lat, ARENA_CENTER.lng);
+    if (dist > ARENA_RADIUS_MILES) {
+      setOutOfBounds(true);
+      return;
+    }
+    setOutOfBounds(false);
     setMarker({ latitude: lat, longitude: lng });
     onLocationSet(lat, lng);
   };
 
   const defaultViewport = {
-    latitude: marker?.latitude || 37.7749, // Default to San Francisco
-    longitude: marker?.longitude || -122.4194,
-    zoom: 11
+    latitude: marker?.latitude || ARENA_CENTER.lat,
+    longitude: marker?.longitude || ARENA_CENTER.lng,
+    zoom: 13
   };
 
   if (!MAPBOX_TOKEN) {
@@ -33,9 +59,9 @@ export default function LocationPicker({ initialLat, initialLng, onLocationSet }
         <button
           type="button"
           onClick={() => {
-            // Mock SF coordinates with a slight random spread
-            const mockLat = 37.7749 + (Math.random() - 0.5) * 0.05;
-            const mockLng = -122.4194 + (Math.random() - 0.5) * 0.05;
+            // Mock Irvine-area coordinates with slight random spread
+            const mockLat = ARENA_CENTER.lat + (Math.random() - 0.5) * 0.04;
+            const mockLng = ARENA_CENTER.lng + (Math.random() - 0.5) * 0.04;
             setMarker({ latitude: mockLat, longitude: mockLng });
             onLocationSet(mockLat, mockLng);
           }}
@@ -55,6 +81,8 @@ export default function LocationPicker({ initialLat, initialLng, onLocationSet }
         mapboxAccessToken={MAPBOX_TOKEN}
         onClick={handleMapClick}
         cursor="pointer"
+        maxBounds={ARENA_BOUNDS}
+        minZoom={11}
       >
         {marker && (
           <Marker latitude={marker.latitude} longitude={marker.longitude} anchor="bottom">
@@ -63,9 +91,11 @@ export default function LocationPicker({ initialLat, initialLng, onLocationSet }
         )}
       </Map>
       <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur border border-slate-800 text-[11px] px-2.5 py-1.5 rounded-lg text-slate-300 pointer-events-none">
-        {marker 
-          ? `Lat: ${marker.latitude.toFixed(4)}, Lng: ${marker.longitude.toFixed(4)}` 
-          : '🖱️ Click anywhere on map to drop your pin'}
+        {outOfBounds
+          ? '⛔ Outside the 5-mile arena — pick a closer spot'
+          : marker
+          ? `Lat: ${marker.latitude.toFixed(4)}, Lng: ${marker.longitude.toFixed(4)}`
+          : '🖱️ Click within Irvine arena to drop your pin'}
       </div>
     </div>
   );

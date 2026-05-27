@@ -9,23 +9,47 @@ import LocationPicker from '../components/LocationPicker';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// Generates simulated players around SF so the map feels populated instantly
+// Arena centered on Winvale, Irvine, CA 92612
+const ARENA_CENTER = { lat: 33.6856, lng: -117.8230 };
+const ARENA_RADIUS_MILES = 5;
+
+// Bounding box for the 5-mile radius (~0.09 deg padding)
+const ARENA_BOUNDS = [
+  [ARENA_CENTER.lng - 0.09, ARENA_CENTER.lat - 0.09], // SW
+  [ARENA_CENTER.lng + 0.09, ARENA_CENTER.lat + 0.09]  // NE
+];
+
+/** Haversine distance in miles between two lat/lng points */
+function distanceMiles(lat1, lng1, lat2, lng2) {
+  const R = 3958.8; // Earth radius in miles
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Mock competitors placed around the Irvine/Winvale area
 const MOCK_COMPETITORS = [
-  { id: 'mock-1', username: 'GreenerSF', character: 'frog', points: 180, lat: 37.7749, lng: -122.4194 },
-  { id: 'mock-2', username: 'RoboBins', character: 'robot', points: 90, lat: 37.7882, lng: -122.4014 },
-  { id: 'mock-3', username: 'BambooBear', character: 'panda', points: 120, lat: 37.7609, lng: -122.4354 },
-  { id: 'mock-4', username: 'XenoRecycler', character: 'alien', points: 40, lat: 37.8012, lng: -122.4156 },
-  { id: 'mock-5', username: 'FungiFriend', character: 'mushroom', points: 70, lat: 37.7423, lng: -122.3999 }
+  { id: 'mock-1', username: 'IrvineGreen', character: 'frog', points: 180, lat: 33.6920, lng: -117.8310 },
+  { id: 'mock-2', username: 'RoboBins', character: 'robot', points: 90, lat: 33.6780, lng: -117.8140 },
+  { id: 'mock-3', username: 'BambooBear', character: 'panda', points: 120, lat: 33.6810, lng: -117.8380 },
+  { id: 'mock-4', username: 'XenoRecycler', character: 'alien', points: 40, lat: 33.6900, lng: -117.8100 },
+  { id: 'mock-5', username: 'FungiFriend', character: 'mushroom', points: 70, lat: 33.6730, lng: -117.8270 }
 ];
 
 export default function MapView({ userProfile, onProfileUpdate, onNavigate }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewState, setViewState] = useState({
-    latitude: userProfile?.lat || 37.7749,
-    longitude: userProfile?.lng || -122.4194,
-    zoom: 11
+    latitude: ARENA_CENTER.lat,
+    longitude: ARENA_CENTER.lng,
+    zoom: 13
   });
+  const [pinError, setPinError] = useState('');
   
   const [showMovePin, setShowMovePin] = useState(false);
   const [tempCoords, setTempCoords] = useState({ lat: null, lng: null });
@@ -96,6 +120,12 @@ export default function MapView({ userProfile, onProfileUpdate, onNavigate }) {
   const handleLocationSave = async () => {
     if (!tempCoords.lat || !tempCoords.lng) return;
 
+    const dist = distanceMiles(tempCoords.lat, tempCoords.lng, ARENA_CENTER.lat, ARENA_CENTER.lng);
+    if (dist > ARENA_RADIUS_MILES) {
+      setPinError(`📍 That spot is ${dist.toFixed(1)} mi away — pins must be within ${ARENA_RADIUS_MILES} miles of Winvale, Irvine.`);
+      return;
+    }
+    setPinError('');
     setSavingLocation(true);
     const updatedProfile = {
       ...userProfile,
@@ -246,6 +276,8 @@ export default function MapView({ userProfile, onProfileUpdate, onNavigate }) {
               mapStyle="mapbox://styles/mapbox/dark-v11"
               mapboxAccessToken={MAPBOX_TOKEN}
               style={{ width: '100%', height: '100%' }}
+              maxBounds={ARENA_BOUNDS}
+              minZoom={11}
             >
               {players.map((player) => (
                 <CharacterMarker
@@ -275,8 +307,11 @@ export default function MapView({ userProfile, onProfileUpdate, onNavigate }) {
             </div>
             
             <p className="text-xs text-slate-400">
-              Click anywhere on the map to select a new location for your character. 
+              Click anywhere within <span className="text-emerald-400 font-semibold">5 miles of Winvale, Irvine</span> to place your pin.
             </p>
+            {pinError && (
+              <p className="text-xs text-red-400 bg-red-950/40 border border-red-900/50 rounded-xl px-3 py-2">{pinError}</p>
+            )}
 
             <LocationPicker 
               initialLat={userProfile?.lat} 
