@@ -282,22 +282,7 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
               <h2 className="text-lg font-bold font-display text-white">
                 📦 Your Recent Submissions
               </h2>
-              <div className="flex items-center gap-3">
-                {submissions.length > 8 && (
-                  <button
-                    onClick={() => setShowAllSubmissions(!showAllSubmissions)}
-                    className="text-[11px] font-bold px-2.5 py-1 rounded-xl border transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1 hover:brightness-110"
-                    style={{
-                      backgroundColor: 'rgba(216,157,87,0.1)',
-                      borderColor: 'rgba(216,157,87,0.3)',
-                      color: '#d89d57'
-                    }}
-                  >
-                    {showAllSubmissions ? 'Collapse' : `Show All (${submissions.length})`}
-                  </button>
-                )}
-                <span className="text-xs font-semibold" style={{ color: '#695032' }}>{submissions.length} Total</span>
-              </div>
+              <span className="text-xs font-semibold" style={{ color: '#695032' }}>{submissions.length} Total</span>
             </div>
 
             {loading ? (
@@ -358,6 +343,28 @@ export default function Home({ userProfile, onProfileUpdate, onNavigate }) {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {submissions.length > 8 && (
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={() => setShowAllSubmissions(!showAllSubmissions)}
+                  className="text-[12px] font-bold px-5 py-2.5 rounded-2xl border transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-md hover:brightness-110"
+                  style={{
+                    backgroundColor: 'rgba(216,157,87,0.08)',
+                    borderColor: 'rgba(216,157,87,0.25)',
+                    color: '#d89d57'
+                  }}
+                >
+                  {showAllSubmissions ? (
+                    <span>▲ Show Less</span>
+                  ) : (
+                    <span>
+                      + See more ({Math.ceil((submissions.length - 8) / 2)} more row{Math.ceil((submissions.length - 8) / 2) > 1 ? 's' : ''})
+                    </span>
+                  )}
+                </button>
               </div>
             )}
           </div>
